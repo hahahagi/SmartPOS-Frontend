@@ -141,13 +141,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 },
               ),
               const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text('Lupa password?'),
-                ),
-              ),
+              Align(alignment: Alignment.centerRight),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: authState.isLoading ? null : _submit,
@@ -169,7 +163,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     color: AppColors.primaryBlue,
                   ),
                   SizedBox(width: 8),
-                  Text('Menggunakan Laravel Sanctum Token'),
+                  Text('Data login Anda aman dan terenkripsi'),
                 ],
               ),
             ],

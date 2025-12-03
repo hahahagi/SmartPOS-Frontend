@@ -111,6 +111,11 @@ const _adminOnlyPaths = <String>{
   ReportOverviewPage.routePath,
 };
 
+const _managerPaths = <String>{
+  StockAdjustmentPage.routePath,
+  ReportOverviewPage.routePath,
+};
+
 class RouterNotifier extends ChangeNotifier {
   RouterNotifier(this._ref) {
     _subscription = _ref.listen<AuthState>(
@@ -141,7 +146,11 @@ class RouterNotifier extends ChangeNotifier {
       return DashboardPage.routePath;
     }
 
-    if (_adminOnlyPaths.contains(state.uri.path) && !authState.isAdmin) {
+    if (_adminOnlyPaths.contains(state.uri.path)) {
+      if (authState.isAdmin) return null;
+      if (authState.isManager && _managerPaths.contains(state.uri.path)) {
+        return null;
+      }
       return DashboardPage.routePath;
     }
 

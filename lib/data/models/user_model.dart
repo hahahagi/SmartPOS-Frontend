@@ -34,10 +34,16 @@ class UserModel {
 
   bool get isAdmin => _normalizedRole == 'admin';
 
+  bool get isManager => _normalizedRole == 'manager';
+
   bool get isCashier =>
       _normalizedRole == 'kasir' || _normalizedRole == 'cashier';
 
-  String get roleLabel => isAdmin ? 'Admin' : 'Kasir';
+  String get roleLabel {
+    if (isAdmin) return 'Admin';
+    if (isManager) return 'Manager';
+    return 'Kasir';
+  }
 }
 
 int _asInt(dynamic value) {

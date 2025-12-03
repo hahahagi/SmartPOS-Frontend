@@ -29,6 +29,7 @@ class AuthState {
       status == AuthStatus.authenticated && user != null;
   bool get isLoading => status == AuthStatus.authenticating;
   bool get isAdmin => user?.isAdmin ?? false;
+  bool get isManager => user?.isManager ?? false;
   bool get isCashier => user?.isCashier ?? false;
   String get roleLabel => user?.roleLabel ?? '-';
 

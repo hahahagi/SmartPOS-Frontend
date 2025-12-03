@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "smartpos_pos" "\0"
+            VALUE "FileDescription", "SmartPOS" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "smartpos_pos" "\0"
+            VALUE "InternalName", "SmartPOS" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "smartpos_pos.exe" "\0"
-            VALUE "ProductName", "smartpos_pos" "\0"
+            VALUE "OriginalFilename", "SmartPOS.exe" "\0"
+            VALUE "ProductName", "SmartPOS" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

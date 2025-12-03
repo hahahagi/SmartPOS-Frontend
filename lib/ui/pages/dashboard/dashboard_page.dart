@@ -26,6 +26,7 @@ class DashboardPage extends ConsumerWidget {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
     final isAdmin = authState.isAdmin;
+    final isManager = authState.isManager;
     final shortcuts = <_ShortcutConfig>[
       const _ShortcutConfig(
         icon: Icons.point_of_sale,
@@ -51,6 +52,19 @@ class DashboardPage extends ConsumerWidget {
           label: 'Kategori Produk',
           routePath: CategoryManagementPage.routePath,
         ),
+        _ShortcutConfig(
+          icon: Icons.warehouse,
+          label: 'Penyesuaian Stok',
+          routePath: StockAdjustmentPage.routePath,
+        ),
+        _ShortcutConfig(
+          icon: Icons.query_stats,
+          label: 'Laporan Penjualan',
+          routePath: ReportOverviewPage.routePath,
+        ),
+      ]);
+    } else if (isManager) {
+      shortcuts.addAll(const [
         _ShortcutConfig(
           icon: Icons.warehouse,
           label: 'Penyesuaian Stok',

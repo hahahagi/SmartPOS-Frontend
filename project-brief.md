@@ -110,3 +110,7 @@ Riverpod: Menggunakan autoDispose pada provider untuk halaman yang sifatnya seme
 Output: APK release (Build siap instal).
 Branding: Splash screen dan App icon "SmartPOS" harus diterapkan.
 Deliverables: Flutter Project Ready to Run (Source Code), Folder structure clean, API integration lengkap, Dokumentasi (README & Postman).
+
+flutter run --dart-define=API_BASE_URL=http://192.168.0.102:8000/api
+
+php artisan serve --host 0.0.0.0 --port 8000

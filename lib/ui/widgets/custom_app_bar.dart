@@ -46,14 +46,14 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
               subtitle!,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.white70),
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
             ),
           if (showUserInfo)
             Text(
               '${authState.roleLabel}: ${authState.user?.name ?? '-'}',
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.white70),
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
             ),
         ],
       ),

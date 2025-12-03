@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../data/models/receipt_summary.dart';
+import '../../../data/services/pdf_service.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/transaction_provider.dart';
 import '../../../utils/formatters.dart';
 
@@ -16,6 +18,8 @@ class ReceiptPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionState = ref.watch(transactionProvider);
     final receipt = transactionState.lastReceipt;
+    final authState = ref.watch(authNotifierProvider);
+    final cashierName = authState.user?.name ?? '-';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Struk Transaksi')),
@@ -48,6 +52,20 @@ class ReceiptPage extends ConsumerWidget {
                   const Divider(thickness: 1.5),
                   _ReceiptSummary(receipt: receipt),
                   const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        PdfService().printReceiptFromSummary(
+                          receipt,
+                          cashierName,
+                        );
+                      },
+                      icon: const Icon(Icons.print),
+                      label: const Text('Cetak Struk (PDF)'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

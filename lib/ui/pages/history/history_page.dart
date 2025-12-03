@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/transaction_history_model.dart';
+import '../../../data/services/pdf_service.dart';
 import '../../../providers/transaction_history_provider.dart';
 import '../../../utils/formatters.dart';
 
@@ -262,10 +263,22 @@ class _HistoryTile extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.access_time, size: 16, color: Colors.grey),
-              const SizedBox(width: 4),
-              Text(formatDateTime(item.createdAt)),
+              Row(
+                children: [
+                  const Icon(Icons.access_time, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(formatDateTime(item.createdAt)),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.print),
+                onPressed: () {
+                  PdfService().printReceipt(item);
+                },
+                tooltip: 'Cetak Struk',
+              ),
             ],
           ),
         ],
