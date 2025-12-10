@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../config/colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/connectivity_provider.dart';
 
@@ -31,41 +32,57 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     return AppBar(
       automaticallyImplyLeading: false,
+      elevation: 0,
+      backgroundColor: Colors.white,
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
               onPressed: () => Navigator.of(context).maybePop(),
             )
           : null,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.darkGray,
+            ),
+          ),
           if (subtitle != null)
             Text(
               subtitle!,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
             ),
-          if (showUserInfo)
-            Text(
-              '${authState.roleLabel}: ${authState.user?.name ?? '-'}',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+          if (showUserInfo && subtitle == null)
+            Row(
+              children: [
+                Icon(Icons.person_outline, size: 12, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text(
+                  '${authState.roleLabel}: ${authState.user?.name ?? '-'}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                ),
+              ],
             ),
         ],
       ),
       actions: [
-        _ConnectionIndicator(isOnline: isOnline),
+        Center(child: _ConnectionIndicator(isOnline: isOnline)),
+        const SizedBox(width: 8),
         if (actions != null) ...actions!,
         if (showLogoutButton)
           IconButton(
             tooltip: 'Logout',
             onPressed: () => ref.read(authNotifierProvider.notifier).logout(),
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded, color: AppColors.danger),
           ),
+        const SizedBox(width: 8),
       ],
     );
   }
@@ -81,32 +98,33 @@ class _ConnectionIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isOnline ? Colors.greenAccent : Colors.redAccent;
-    final label = isOnline ? 'Online' : 'Offline';
+    final color = isOnline ? Colors.green : Colors.red;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Chip(
-        backgroundColor: color.withOpacity(.15),
-        label: Row(
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              margin: const EdgeInsets.only(right: 6),
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            isOnline ? 'Online' : 'Offline',
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
             ),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+        ],
       ),
     );
   }

@@ -58,7 +58,7 @@ class TransactionRepository {
 
   Future<TransactionTodaySummary> fetchTodaySummary() async {
     final response = await _dio.get<Map<String, dynamic>>(
-      '/transactions/today',
+      '/transactions/summary/today',
     );
     final data = response.data ?? <String, dynamic>{};
     return TransactionTodaySummary.fromJson(data);
