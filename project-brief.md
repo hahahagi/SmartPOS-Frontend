@@ -101,8 +101,8 @@ Output: APK release (Build siap instal).
 Branding: Splash screen dan App icon "SmartPOS" harus diterapkan.
 Deliverables: Flutter Project Ready to Run (Source Code), Folder structure clean, API integration lengkap, Dokumentasi (README & Postman).
 
-flutter run --dart-define=API_BASE_URL=http://34.59.193.254/api
+flutter run --dart-define=API_BASE_URL=http://34.63.230.254/api
 
 php artisan serve --host 0.0.0.0 --port 8000
 
-flutter build apk --release --dart-define=API_BASE_URL=http://34.59.193.254/api
+flutter build apk --release --dart-define=API_BASE_URL=http://34.63.230.254/api
