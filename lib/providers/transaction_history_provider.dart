@@ -131,7 +131,11 @@ class TransactionHistoryNotifier
   }
 
   Future<void> setPaymentMethod(String? method) async {
-    state = state.copyWith(paymentMethod: method, page: 1);
+    if (method == null) {
+      state = state.copyWith(clearPaymentMethod: true, page: 1);
+    } else {
+      state = state.copyWith(paymentMethod: method, page: 1);
+    }
     await loadInitial();
   }
 

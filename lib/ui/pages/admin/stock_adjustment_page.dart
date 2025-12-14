@@ -101,17 +101,10 @@ class _StockAdjustmentPageState extends ConsumerState<StockAdjustmentPage> {
     final productOptions = ref.watch(stockProductOptionsProvider);
 
     return Scaffold(
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         title: 'Penyesuaian Stok',
         showBackButton: true,
-        actions: [
-          IconButton(
-            tooltip: 'Muat ulang',
-            onPressed: () =>
-                ref.read(stockManagementProvider.notifier).refresh(),
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
+        showLogoutButton: false,
       ),
       resizeToAvoidBottomInset: true,
       body: Column(

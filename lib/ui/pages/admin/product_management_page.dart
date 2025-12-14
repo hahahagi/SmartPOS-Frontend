@@ -130,7 +130,11 @@ class _ProductManagementPageState extends ConsumerState<ProductManagementPage> {
     final hasFilters = state.searchQuery.isNotEmpty || state.categoryId != null;
 
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Kelola Produk', showBackButton: true),
+      appBar: const CustomAppBar(
+        title: 'Kelola Produk',
+        showBackButton: true,
+        showLogoutButton: false,
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
         icon: const Icon(Icons.add),

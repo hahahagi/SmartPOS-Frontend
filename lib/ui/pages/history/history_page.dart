@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/colors.dart';
 import '../../../data/models/transaction_history_model.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../data/services/pdf_service.dart';
 import '../../../providers/transaction_history_provider.dart';
 import '../../../utils/formatters.dart';
@@ -16,9 +18,34 @@ class HistoryPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(transactionHistoryProvider);
     final notifier = ref.read(transactionHistoryProvider.notifier);
+    final authState = ref.watch(authNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Riwayat Transaksi')),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Riwayat Transaksi',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '${authState.roleLabel}: ${authState.user?.name ?? '-'}',
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
       body: Column(
         children: [
           _FilterBar(state: state, notifier: notifier),

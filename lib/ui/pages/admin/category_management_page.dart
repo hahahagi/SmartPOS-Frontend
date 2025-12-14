@@ -123,6 +123,7 @@ class _CategoryManagementPageState
       appBar: const CustomAppBar(
         title: 'Kelola Kategori',
         showBackButton: true,
+        showLogoutButton: false,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),

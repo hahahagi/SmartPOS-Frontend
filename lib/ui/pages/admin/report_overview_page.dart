@@ -73,6 +73,7 @@ class _ReportOverviewPageState extends ConsumerState<ReportOverviewPage> {
         appBar: const CustomAppBar(
           title: 'Laporan Penjualan',
           showBackButton: true,
+          showLogoutButton: false,
         ),
         body: Column(
           children: [

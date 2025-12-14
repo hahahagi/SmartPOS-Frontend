@@ -14,6 +14,7 @@ class LocalStorageService {
   static const _tokenKey = 'auth_token';
   static const _userKey = 'auth_user';
   static const _lastLoginKey = 'last_login_timestamp';
+  static const _emailHistoryKey = 'email_history';
 
   String? readAuthToken() => _preferences.getString(_tokenKey);
 
@@ -39,6 +40,24 @@ class LocalStorageService {
     final raw = _preferences.getString(_userKey);
     if (raw == null) return null;
     return jsonDecode(raw) as Map<String, dynamic>;
+  }
+
+  List<String> readEmailHistory() {
+    final raw = _preferences.getStringList(_emailHistoryKey);
+    return raw ?? [];
+  }
+
+  Future<void> addEmailToHistory(String email) async {
+    final history = readEmailHistory();
+    // Remove if already exists to prevent duplicates
+    history.remove(email);
+    // Add to the beginning
+    history.insert(0, email);
+    // Keep only last 5 emails
+    if (history.length > 5) {
+      history.removeRange(5, history.length);
+    }
+    await _preferences.setStringList(_emailHistoryKey, history);
   }
 
   /// Placeholder for Hive initialization side-effects. Keeps Hive box names

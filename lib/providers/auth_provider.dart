@@ -101,6 +101,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final payload = await _repository.login(email: email, password: password);
       await _persistPayload(payload);
+      await _storage.addEmailToHistory(email);
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: payload.user,

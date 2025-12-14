@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../config/colors.dart';
+import '../../../data/services/local_storage_service.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/auto_logout_provider.dart';
 
@@ -23,10 +24,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   late int _lastAutoLogoutSignal;
   ProviderSubscription<AuthState>? _authSubscription;
   ProviderSubscription<int>? _autoLogoutSubscription;
+  List<String> _emailHistory = [];
+  List<String> _filteredEmails = [];
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+  OverlayEntry? _overlayEntry;
+  final LayerLink _layerLink = LayerLink();
 
   @override
   void initState() {
     super.initState();
+    _loadEmailHistory();
+    _emailController.addListener(_onEmailChanged);
+    _emailFocusNode.addListener(_onEmailFocusChanged);
     _authSubscription = ref.listenManual<AuthState>(authNotifierProvider, (
       previous,
       next,
@@ -60,11 +70,101 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   void dispose() {
+    _removeOverlay();
     _authSubscription?.close();
     _autoLogoutSubscription?.close();
+    _emailController.removeListener(_onEmailChanged);
     _emailController.dispose();
+    _emailFocusNode.removeListener(_onEmailFocusChanged);
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _loadEmailHistory() {
+    final storage = ref.read(localStorageServiceProvider);
+    setState(() {
+      _emailHistory = storage.readEmailHistory();
+    });
+  }
+
+  void _onEmailChanged() {
+    final query = _emailController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredEmails = _emailHistory;
+      } else {
+        _filteredEmails = _emailHistory
+            .where((email) => email.toLowerCase().contains(query))
+            .toList();
+      }
+    });
+    if (_filteredEmails.isNotEmpty && _emailFocusNode.hasFocus) {
+      _showOverlay();
+    } else {
+      _removeOverlay();
+    }
+  }
+
+  void _onEmailFocusChanged() {
+    if (_emailFocusNode.hasFocus && _emailController.text.isNotEmpty) {
+      _onEmailChanged();
+    } else {
+      _removeOverlay();
+    }
+  }
+
+  void _showOverlay() {
+    _removeOverlay();
+    _overlayEntry = _createOverlayEntry();
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    return OverlayEntry(
+      builder: (context) => Positioned(
+        width: MediaQuery.of(context).size.width - 48,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 60),
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(8),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: _filteredEmails.length,
+                itemBuilder: (context, index) {
+                  final email = _filteredEmails[index];
+                  return ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.history, size: 20),
+                    title: Text(email, style: const TextStyle(fontSize: 14)),
+                    onTap: () {
+                      _emailController.text = email;
+                      _emailController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: email.length),
+                      );
+                      _removeOverlay();
+                      _passwordFocusNode.requestFocus();
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showSnackBar(String message) {
@@ -151,42 +251,47 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'Masukkan email Anda',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
-                          color: AppColors.primaryBlue,
-                          width: 2,
+                  CompositedTransformTarget(
+                    link: _layerLink,
+                    child: TextFormField(
+                      controller: _emailController,
+                      focusNode: _emailFocusNode,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        hintText: 'Masukkan email Anda',
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: AppColors.primaryBlue,
+                            width: 2,
+                          ),
                         ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email wajib diisi';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Format email tidak valid';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Email wajib diisi';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Format email tidak valid';
-                      }
-                      return null;
-                    },
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
                     controller: _passwordController,
+                    focusNode: _passwordFocusNode,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Password',

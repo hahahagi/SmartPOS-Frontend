@@ -45,7 +45,8 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            style: const TextStyle(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.darkGray,
             ),
@@ -79,11 +80,37 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
         if (showLogoutButton)
           IconButton(
             tooltip: 'Logout',
-            onPressed: () => ref.read(authNotifierProvider.notifier).logout(),
+            onPressed: () => _showLogoutConfirmation(context, ref),
             icon: const Icon(Icons.logout_rounded, color: AppColors.danger),
           ),
         const SizedBox(width: 8),
       ],
+    );
+  }
+
+  void _showLogoutConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Logout'),
+          content: const Text('Apakah Anda yakin ingin keluar?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                ref.read(authNotifierProvider.notifier).logout();
+              },
+              style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
     );
   }
 
