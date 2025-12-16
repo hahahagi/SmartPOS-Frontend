@@ -45,6 +45,8 @@ class TransactionHistoryItem {
     required this.code,
     required this.totalAmount,
     required this.paymentMethod,
+    required this.cashReceived,
+    required this.changeAmount,
     required this.createdAt,
     required this.cashierName,
     required this.items,
@@ -54,11 +56,18 @@ class TransactionHistoryItem {
   final String code;
   final double totalAmount;
   final String paymentMethod;
+
+  /// 🔥 TAMBAHAN REVISI DOSEN
+  final double cashReceived;
+  final double changeAmount;
+
   final DateTime createdAt;
   final String cashierName;
   final List<TransactionLineItem> items;
 
   int get itemsCount => items.length;
+
+  bool get isCash => paymentMethod.toLowerCase() == 'cash';
 
   factory TransactionHistoryItem.fromJson(Map<String, dynamic> json) {
     final itemsJson = json['items'] as List<dynamic>? ?? const [];
@@ -67,6 +76,11 @@ class TransactionHistoryItem {
       code: json['transaction_code'] as String? ?? '-',
       totalAmount: _asDouble(json['total_amount']),
       paymentMethod: json['payment_method'] as String? ?? '-',
+
+      /// 🔥 parsing kembalian & uang diterima
+      cashReceived: _asDouble(json['cash_amount']),
+      changeAmount: _asDouble(json['change_amount']),
+
       createdAt: _parseDate(json['created_at']),
       cashierName:
           (json['user'] as Map<String, dynamic>?)?['name'] as String? ?? '-',

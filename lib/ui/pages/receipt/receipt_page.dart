@@ -85,6 +85,8 @@ class _ReceiptHeader extends StatelessWidget {
 
   final ReceiptSummary receipt;
 
+  bool get _isCash => receipt.paymentMethod.name.toLowerCase() == 'cash';
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -103,12 +105,21 @@ class _ReceiptHeader extends StatelessWidget {
           'Metode: ${receipt.paymentMethod.name.toUpperCase()}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
+        if (_isCash)
+          Text(
+            'Pembayaran Tunai',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Colors.green.shade700),
+          ),
         if (receipt.invoiceCode == null)
           Text(
             'Menunggu sinkronisasi server',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.orange.shade700),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Colors.orange.shade700),
           ),
       ],
     );
@@ -130,6 +141,8 @@ class _ReceiptSummary extends StatelessWidget {
 
   final ReceiptSummary receipt;
 
+  bool get _isCash => receipt.paymentMethod.name.toLowerCase() == 'cash';
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -137,9 +150,15 @@ class _ReceiptSummary extends StatelessWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [const Text('Total'), Text(formatCurrency(receipt.total))],
+          children: [
+            const Text('Total'),
+            Text(formatCurrency(receipt.total)),
+          ],
         ),
-        if (receipt.cashReceived != null) ...[
+
+        // ===== CASH CONDITIONAL (AKADEMIS & JELAS) =====
+        if (_isCash && receipt.cashReceived != null) ...[
+          const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -147,12 +166,12 @@ class _ReceiptSummary extends StatelessWidget {
               Text(formatCurrency(receipt.cashReceived!)),
             ],
           ),
-          if (receipt.change > 0)
+          if ((receipt.changeAmount ?? 0) > 0)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Kembalian'),
-                Text(formatCurrency(receipt.change)),
+                Text(formatCurrency(receipt.changeAmount!)),
               ],
             ),
         ],
