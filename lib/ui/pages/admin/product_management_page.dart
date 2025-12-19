@@ -406,7 +406,13 @@ class _ProductCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     const Text('Stok Saat Ini'),
-                    Text('${product.stock} pcs'),
+                    Text(
+                      '${product.stock} pcs${product.stock <= 5 ? ' (!)' : ''}',
+                      style: TextStyle(
+                        color: product.stock <= 5 ? Colors.red : null,
+                        fontWeight: product.stock <= 5 ? FontWeight.bold : null,
+                      ),
+                    ),
                   ],
                 ),
               ],

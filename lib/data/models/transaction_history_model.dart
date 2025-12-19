@@ -81,7 +81,7 @@ class TransactionHistoryItem {
       cashReceived: _asDouble(json['cash_amount']),
       changeAmount: _asDouble(json['change_amount']),
 
-      createdAt: _parseDate(json['created_at']),
+      createdAt: _parseDate(json['created_  at']),
       cashierName:
           (json['user'] as Map<String, dynamic>?)?['name'] as String? ?? '-',
       items: itemsJson

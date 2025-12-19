@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../data/models/transaction_payload.dart';
 import '../../../providers/cart_provider.dart';
@@ -37,7 +38,10 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
     final transactionState = ref.watch(transactionProvider);
 
     final total = cart.total;
-    final cashReceived = double.tryParse(_cashController.text);
+    // Remove dots before parsing
+    final cashReceived = double.tryParse(
+      _cashController.text.replaceAll('.', ''),
+    );
     final change = (cashReceived ?? 0) - total;
 
     ref.listen(transactionProvider, (previous, next) {
@@ -108,7 +112,10 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                     TextField(
                       controller: _cashController,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        CurrencyInputFormatter(),
+                      ],
                       decoration: const InputDecoration(
                         prefixText: 'Rp ',
                         hintText: 'Masukkan nominal cash',
@@ -180,7 +187,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
   Future<void> _submit(double total) async {
     double? cashReceived;
     if (_method == PaymentMethod.cash) {
-      cashReceived = double.tryParse(_cashController.text);
+      cashReceived = double.tryParse(_cashController.text.replaceAll('.', ''));
       if (cashReceived == null || cashReceived < total) {
         ScaffoldMessenger.of(context)
           ..clearSnackBars()
@@ -201,4 +208,35 @@ class _MethodConfig {
   final IconData icon;
   final String label;
   final String? subtitle;
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    // Clean non-digits
+    String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (newText.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    // Parse
+    int value = int.parse(newText);
+
+    // Format
+    final formatter = NumberFormat.decimalPattern('id_ID');
+    String formatted = formatter.format(value);
+
+    return newValue.copyWith(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
 }

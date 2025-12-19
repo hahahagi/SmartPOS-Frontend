@@ -101,6 +101,26 @@ class _StartTransactionPageState extends ConsumerState<StartTransactionPage> {
     );
   }
 
+  // Show out of stock alert dialog
+  void _showOutOfStockAlert(String productName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Stok Habis'),
+        content: Text(
+          'Produk "$productName" stoknya habis!\n'
+          'Tidak dapat menambahkan produk ini.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
@@ -253,7 +273,9 @@ class _StartTransactionPageState extends ConsumerState<StartTransactionPage> {
                                 product.id,
                               );
 
-                              if (currentQuantity >= product.stock) {
+                              if (product.stock == 0) {
+                                _showOutOfStockAlert(product.name);
+                              } else if (currentQuantity >= product.stock) {
                                 _showStockAlert(
                                   product.name,
                                   product.stock,
@@ -469,7 +491,9 @@ class _StartTransactionPageState extends ConsumerState<StartTransactionPage> {
               product: product,
               quantity: quantity,
               onIncrement: () {
-                if (quantity >= product.stock) {
+                if (product.stock == 0) {
+                  _showOutOfStockAlert(product.name);
+                } else if (quantity >= product.stock) {
                   _showStockAlert(product.name, product.stock, quantity + 1);
                 } else {
                   print('Adding product from list: ${product.name}');
@@ -486,7 +510,9 @@ class _StartTransactionPageState extends ConsumerState<StartTransactionPage> {
                 }
               },
               onAdd: () {
-                if (quantity >= product.stock) {
+                if (product.stock == 0) {
+                  _showOutOfStockAlert(product.name);
+                } else if (quantity >= product.stock) {
                   _showStockAlert(product.name, product.stock, quantity + 1);
                 } else {
                   print(
@@ -649,17 +675,26 @@ class _ProductListCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'Rp ${product.sellPrice.toStringAsFixed(0)}',
+                        formatCurrency(product.sellPrice),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Text(
-                        'Stok: ${product.stock} pcs',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey.shade600,
+                      Expanded(
+                        child: Text(
+                          'Stok: ${product.stock} pcs${product.stock == 0 ? ' (Stok Habis)' : (product.stock <= 5 ? ' (Hampir Habis)' : '')}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: product.stock <= 5
+                                    ? Colors.red
+                                    : Colors.grey.shade600,
+                                fontWeight: product.stock <= 5
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

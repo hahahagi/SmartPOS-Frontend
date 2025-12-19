@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 import '../../../data/models/report_models.dart';
 import '../../../data/models/transaction_history_model.dart';
@@ -60,6 +63,144 @@ class _ReportOverviewPageState extends ConsumerState<ReportOverviewPage> {
     await _notifier.loadBestsellerReport(
       startDate: range.start,
       endDate: range.end,
+    );
+  }
+
+  Future<void> _printDailyReport(DailyReportModel report, DateTime date) async {
+    final doc = pw.Document();
+    final font = await PdfGoogleFonts.nunitoExtraLight();
+
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Text(
+                  'Laporan Harian: ${formatDate(date)}',
+                  style: pw.TextStyle(font: font, fontSize: 24),
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    'Total Penjualan: ${formatCurrency(report.summary.totalAmount)}',
+                    style: pw.TextStyle(font: font),
+                  ),
+                  pw.Text(
+                    'Jumlah Transaksi: ${report.summary.totalTransactions}',
+                    style: pw.TextStyle(font: font),
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Daftar Transaksi',
+                style: pw.TextStyle(
+                  font: font,
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Table.fromTextArray(
+                context: context,
+                data: <List<String>>[
+                  <String>['ID', 'Waktu', 'Total', 'Metode'],
+                  ...report.transactions.map(
+                    (t) => [
+                      t.id.toString(),
+                      formatDateTime(t.createdAt),
+                      formatCurrency(t.totalAmount),
+                      t.paymentMethod ?? '-',
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => doc.save(),
+    );
+  }
+
+  Future<void> _printMonthlyReport(
+    MonthlyReportModel report,
+    int year,
+    int month,
+  ) async {
+    final doc = pw.Document();
+    final font = await PdfGoogleFonts.nunitoExtraLight();
+    final dateLabel = _monthLabelFormatter.format(DateTime(year, month, 1));
+
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Text(
+                  'Laporan Bulanan: $dateLabel',
+                  style: pw.TextStyle(font: font, fontSize: 24),
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    'Total Penjualan: ${formatCurrency(report.summary.totalAmount)}',
+                    style: pw.TextStyle(font: font),
+                  ),
+                  pw.Text(
+                    'Jumlah Transaksi: ${report.summary.totalTransactions}',
+                    style: pw.TextStyle(font: font),
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Ringkasan Harian',
+                style: pw.TextStyle(
+                  font: font,
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Table.fromTextArray(
+                context: context,
+                data: <List<String>>[
+                  <String>['Tanggal', 'Total', 'Transaksi'],
+                  ...report.dailySummary.map(
+                    (d) => [
+                      formatDate(d.date),
+                      formatCurrency(d.totalAmount),
+                      d.totalTransactions.toString(),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => doc.save(),
     );
   }
 
@@ -139,6 +280,12 @@ class _ReportOverviewPageState extends ConsumerState<ReportOverviewPage> {
                 onPressed: () => _pickDailyDate(state.dailyDate),
                 icon: const Icon(Icons.event),
               ),
+              if (report != null)
+                IconButton(
+                  tooltip: 'Cetak Laporan',
+                  onPressed: () => _printDailyReport(report, state.dailyDate),
+                  icon: const Icon(Icons.print),
+                ),
               TextButton(
                 onPressed: () =>
                     _notifier.loadDailyReport(date: DateTime.now()),
@@ -211,6 +358,16 @@ class _ReportOverviewPageState extends ConsumerState<ReportOverviewPage> {
                     _pickMonthlyPeriod(state.monthlyYear, state.monthlyMonth),
                 icon: const Icon(Icons.calendar_month),
               ),
+              if (report != null)
+                IconButton(
+                  tooltip: 'Cetak Laporan',
+                  onPressed: () => _printMonthlyReport(
+                    report,
+                    state.monthlyYear,
+                    state.monthlyMonth,
+                  ),
+                  icon: const Icon(Icons.print),
+                ),
             ],
           ),
           const SizedBox(height: 16),
